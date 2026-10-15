@@ -24,16 +24,17 @@ class Element {
   querySelectorAll(selector){const out=[];for(const child of this.children){if(selector.startsWith('.')?(child.className||'').split(' ').includes(selector.slice(1)):child.tagName===selector.toUpperCase())out.push(child);out.push(...child.querySelectorAll(selector));}return out;}
 }
 
-async function harness(turns=[], speechRecognition=null, speechSynthesis=null, timers={setTimeout,clearTimeout}) {
+async function harness(turns=[], speechRecognition=null, speechSynthesis=null, timers={setTimeout,clearTimeout}, restoreFixture={}) {
   const source=fs.readFileSync('catnanny/web/static/chat.js','utf8');
   const html=fs.readFileSync('catnanny/web/static/simulator.html','utf8');
   const elements={};for(const match of html.matchAll(/<([a-z]+)[^>]*\bid="([^"]+)"/g))elements[match[2]]=new Element(match[1]);
   elements['messages'].append(elements.welcome);elements['report-days'].value='7';elements['voice-language'].value='en-US';
-  const records=new Map(),calls=[],downloads=[];
+  const records=restoreFixture.storage||new Map(),calls=[],downloads=[];
   class TestURL extends URL{static createObjectURL(blob){downloads.push(blob);return 'blob:test';}static revokeObjectURL(){}}
   function exportDocument(){const documentElement=new Element('html'),head=new Element('head'),body=new Element('body');documentElement.append(head,body);return {documentElement,head,body,createElement:tag=>new Element(tag),querySelectorAll:s=>documentElement.querySelectorAll(s)};}
   const cats=[{cat_id:'mochi',name:'Mochi'},{cat_id:'jeremy',name:'Jeremy'}];
   const record={event_id:'evt_j',cat_id:'jeremy',cat_name:'Jeremy',event_type:'appetite',occurred_at:'2026-10-14T12:00:00Z',details:{status:'not_eating'},reporter:'Alex',status:'awaiting_answer',photos:[]};
+  if(restoreFixture.record)Object.assign(record,restoreFixture.record);
   const report={cat:'Mochi',cat_id:'mochi',start:'2026-10-07T12:00:00Z',end:'2026-10-14T12:00:00Z',counts:{total_events:1},timeline:[{time:'2026-10-14T12:00:00Z',type:'vomit',reporter:'Alex',status:'completed',details:{content:'food'},photos:['http://localhost:8000/uploads/test.png']}]};
   const context={document:{getElementById:id=>elements[id],createElement:tag=>new Element(tag),querySelectorAll:()=>[],addEventListener(){},implementation:{createHTMLDocument:exportDocument}},
     window:{addEventListener(){},SpeechRecognition:speechRecognition,speechSynthesis,SpeechSynthesisUtterance:speechSynthesis?class{constructor(text){this.text=text;}}:null},location:{origin:'http://localhost:8000'},localStorage:{getItem:key=>records.get(key)||null,setItem:(key,value)=>records.set(key,value),removeItem:key=>records.delete(key)},
@@ -43,6 +44,15 @@ async function harness(turns=[], speechRecognition=null, speechSynthesis=null, t
       else if(path==='/caregivers')data=[{caregiver_id:'demo_caregiver',name:'Alex'}];
       else if(path==='/capabilities')data={extraction_provider:'rules',ai_configured:false};
       else if(path==='/conversations/turns')data=turns.shift();
+      else if(path.startsWith('/conversations/')){
+        const url=new URL(path,'http://localhost'),parts=url.pathname.split('/');
+        const saved=restoreFixture.sessions?.[decodeURIComponent(parts[2])];
+        if(!saved)throw new Error('Unexpected conversation '+path);
+        if(parts[3]==='messages'){
+          const offset=Number(url.searchParams.get('offset')||0),size=restoreFixture.pageSize||200;
+          data={items:saved.messages.slice(offset,offset+size),total:saved.messages.length};
+        }else data=saved.state;
+      }
       else if(path.startsWith('/reports/'))data=report;
       else if(path.startsWith('/events/'))data=record;
       else if(path.startsWith('/uploads/'))return {ok:true,status:200,blob:async()=>new Blob(['test-image'],{type:'image/png'})};
@@ -230,4 +240,77 @@ test('final voice text sends after five seconds; editing or canceling stops the 
   for(let i=0;i<5;i++)await second();
   assert.equal(h.calls.filter(c=>c.path==='/conversations/turns').length,1);
   assert.equal(h.elements['message-input'].value,'Corrected draft');
+});
+
+
+test('page reload restores persisted session, paginated history, record and photos without replaying side effects',async()=>{
+  const spoken=[];
+  const synth={getVoices:()=>[],cancel(){},speak(u){spoken.push(u);}};
+  const state={session_id:'resume',cat_id:'mochi',cat_name:'Mochi',event_id:'evt_j',
+    status:'awaiting_answer',details:{status:'eating_less'},speech:'When did Mochi last eat normally?'};
+  const first=await harness([state],null,synth);
+  first.elements['message-input'].value='Mochi is eating less';
+  await first.elements['chat-form'].dispatch('submit');
+  assert.equal(first.records.get('catnanny.session.mochi'),'resume');
+  assert.equal(spoken.length,1);
+  spoken.length=0;
+  const messages=[
+    {text:'Mochi is eating less',response:state},
+    {text:'Download report',response:{...state,speech:'Here is your report.',ui_action:'open_report',action_payload:{download_format:'html'}}},
+    {text:'Show care log',response:{...state,speech:'Here is the care log.',ui_action:'open_care_log'}}
+  ];
+  const h=await harness([{...state,speech:'Saved.'}],null,synth,undefined,{
+    storage:first.records,sessions:{resume:{state,messages}},pageSize:2,
+    record:{cat_id:'mochi',cat_name:'Mochi',details:{status:'eating_less'},photos:[{url:'/uploads/resume.png'}]}
+  });
+  assert.match(h.elements['chat-title'].textContent,/Mochi/);
+  assert.equal(h.elements.messages.querySelectorAll('.message').length,6);
+  assert.match(h.elements.messages.textContent,/Mochi is eating less/);
+  assert.match(h.elements.messages.textContent,/Here is your report/);
+  assert.equal(h.elements['record'].hidden,false);
+  assert.equal(h.elements['event-status'].textContent,'Needs detail');
+  assert.match(h.elements['event-details'].textContent,/Eating less/);
+  assert.equal(h.elements.photos.querySelectorAll('img')[0].src,'/uploads/resume.png');
+  const pageCalls=h.calls.filter(c=>c.path.includes('/messages?'));
+  assert.equal(pageCalls.length,2);
+  assert.match(pageCalls[1].path,/offset=2/);
+  assert.equal(spoken.length,0);
+  assert.equal(h.downloads.length,0);
+  assert.equal(h.elements['report-dialog'].open,false);
+  assert.equal(h.elements['history-dialog'].open,false);
+  assert.equal(h.calls.some(c=>c.path.startsWith('/reports/')),false);
+  assert.equal(h.calls.some(c=>c.path==='/conversations/turns'),false);
+  h.elements['message-input'].value='12 hours';
+  await h.elements['chat-form'].dispatch('submit');
+  const payload=h.calls.find(c=>c.path==='/conversations/turns').body;
+  assert.equal(payload.session_id,'resume');
+  assert.equal(payload.cat_id,'mochi');
+  assert.equal(payload.caregiver_id,'demo_caregiver');
+  assert.notEqual(payload.request_id,first.calls.find(c=>c.path==='/conversations/turns').body.request_id);
+});
+
+test('reload preserves unanswered subject clarification without silently choosing the displayed cat',async()=>{
+  const state={session_id:'pending',cat_id:null,cat_name:null,event_id:null,status:'awaiting_cat',speech:'Which cat is this about?'};
+  const first=await harness([state]);
+  first.elements['message-input'].value='My cat vomited';await first.elements['chat-form'].dispatch('submit');
+  assert.equal(first.records.get('catnanny.pendingSession'),'pending');
+  const h=await harness([state],null,null,undefined,{storage:first.records,
+    sessions:{pending:{state,messages:[{text:'My cat vomited',response:state}]}}});
+  assert.match(h.elements.messages.textContent,/Which cat/);
+  assert.equal(h.calls.some(c=>c.path.startsWith('/events/')),false);
+  h.elements['message-input'].value='Mochi';await h.elements['chat-form'].dispatch('submit');
+  const payload=h.calls.find(c=>c.path==='/conversations/turns').body;
+  assert.equal(payload.session_id,'pending');
+  assert.equal(Object.hasOwn(payload,'cat_id'),false);
+});
+
+test('reload keeps pending confirmation in the same session for a subsequent yes answer',async()=>{
+  const state={session_id:'confirm',cat_id:'mochi',cat_name:'Mochi',event_id:'evt_j',
+    status:'awaiting_confirmation',speech:'Should I create Jeremy and move this observation? Please say yes or no.'};
+  const storage=new Map([['catnanny.selectedCat','mochi'],['catnanny.session.mochi','confirm']]);
+  const h=await harness([state],null,null,undefined,{storage,
+    sessions:{confirm:{state,messages:[{text:'Actually Jeremy',response:state}]}}});
+  assert.match(h.elements.messages.textContent,/Please say yes or no/);
+  h.elements['message-input'].value='Yes';await h.elements['chat-form'].dispatch('submit');
+  assert.equal(h.calls.find(c=>c.path==='/conversations/turns').body.session_id,'confirm');
 });
