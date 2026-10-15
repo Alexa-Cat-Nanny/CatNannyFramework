@@ -1,0 +1,1721 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cat Nanny",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/conversations/turns": {
+      "post": {
+        "tags": [
+          "conversations"
+        ],
+        "summary": "Conversation Turn",
+        "operationId": "conversation_turn_conversations_turns_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{session_id}": {
+      "get": {
+        "tags": [
+          "conversations"
+        ],
+        "summary": "Conversation State",
+        "operationId": "conversation_state_conversations__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "cat_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cats": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Cat Profiles",
+        "operationId": "cat_profiles_cats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Cat"
+                  },
+                  "type": "array",
+                  "title": "Response Cat Profiles Cats Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Add Cat",
+        "operationId": "add_cat_cats_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cat"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cats/{cat_id}": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Cat Profile",
+        "operationId": "cat_profile_cats__cat_id__get",
+        "parameters": [
+          {
+            "name": "cat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cat"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caregivers": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Caregiver Profiles",
+        "operationId": "caregiver_profiles_caregivers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Add Caregiver",
+        "operationId": "add_caregiver_caregivers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaregiverCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/capabilities": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Capabilities",
+        "operationId": "capabilities_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event-types": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Event Types",
+        "operationId": "event_types_event_types_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventTypeView"
+                  },
+                  "type": "array",
+                  "title": "Response Event Types Event Types Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Events",
+        "operationId": "events_events_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "cat_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "mochi",
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Event",
+        "operationId": "create_event_events_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Event Events Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{event_id}": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Event",
+        "operationId": "event_events__event_id__get",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          },
+          {
+            "name": "cat_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{session_id}/messages": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Messages",
+        "operationId": "messages_conversations__session_id__messages_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "cat_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photos/upload": {
+      "post": {
+        "summary": "Upload Photo",
+        "operationId": "upload_photo_photos_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_photo_photos_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Upload Photo Photos Upload Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/vet-summary": {
+      "get": {
+        "summary": "Vet Summary",
+        "operationId": "vet_summary_reports_vet_summary_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "cat_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "mochi",
+              "title": "Cat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VetSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_upload_photo_photos_upload_post": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "photo": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Photo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "photo"
+        ],
+        "title": "Body_upload_photo_photos_upload_post"
+      },
+      "Capabilities": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.3"
+          },
+          "extraction_provider": {
+            "type": "string",
+            "enum": [
+              "rules",
+              "openai"
+            ],
+            "title": "Extraction Provider"
+          },
+          "ai_configured": {
+            "type": "boolean",
+            "title": "Ai Configured"
+          },
+          "event_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Types"
+          },
+          "photo_upload": {
+            "type": "boolean",
+            "title": "Photo Upload",
+            "default": true
+          },
+          "document_upload": {
+            "type": "boolean",
+            "title": "Document Upload",
+            "default": false
+          },
+          "notifications": {
+            "type": "boolean",
+            "title": "Notifications",
+            "default": false
+          },
+          "report_formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Report Formats",
+            "default": [
+              "json"
+            ]
+          },
+          "default_language": {
+            "type": "string",
+            "title": "Default Language",
+            "default": "en"
+          },
+          "default_report_days": {
+            "type": "integer",
+            "title": "Default Report Days",
+            "default": 7
+          },
+          "multiple_cats": {
+            "type": "boolean",
+            "title": "Multiple Cats",
+            "default": true
+          },
+          "caregiver_attribution": {
+            "type": "boolean",
+            "title": "Caregiver Attribution",
+            "default": true
+          },
+          "language_management": {
+            "type": "boolean",
+            "title": "Language Management",
+            "default": true
+          },
+          "subject_corrections": {
+            "type": "boolean",
+            "title": "Subject Corrections",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "extraction_provider",
+          "ai_configured",
+          "event_types"
+        ],
+        "title": "Capabilities"
+      },
+      "CaregiverCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CaregiverCreate"
+      },
+      "Cat": {
+        "properties": {
+          "household_id": {
+            "type": "string",
+            "title": "Household Id"
+          },
+          "cat_id": {
+            "type": "string",
+            "title": "Cat Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sex"
+          },
+          "neutered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neutered"
+          },
+          "birth_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Year"
+          },
+          "current_food": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Food"
+          },
+          "conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conditions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "household_id",
+          "cat_id",
+          "name"
+        ],
+        "title": "Cat"
+      },
+      "CatCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "male",
+                  "female"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sex"
+          },
+          "birth_year": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2026.0,
+                "minimum": 1980.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Year"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CatCreate"
+      },
+      "ConversationRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Request Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Text",
+            "default": ""
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "simulator",
+              "alexa",
+              "mcp",
+              "api"
+            ],
+            "title": "Source",
+            "default": "simulator"
+          },
+          "event_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "vomit",
+                  "appetite"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "cat_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cat Id"
+          },
+          "caregiver_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caregiver Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id"
+        ],
+        "title": "ConversationRequest"
+      },
+      "ConversationResponse": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.3"
+          },
+          "cat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cat Id"
+          },
+          "cat_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cat Name"
+          },
+          "caregiver_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caregiver Id"
+          },
+          "caregiver_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caregiver Name"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_cat",
+              "awaiting_confirmation",
+              "awaiting_answer",
+              "completed"
+            ],
+            "title": "Status"
+          },
+          "event_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "unknown_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknown Fields"
+          },
+          "missing_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Fields"
+          },
+          "follow_up": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up"
+          },
+          "red_flags": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Red Flags"
+          },
+          "speech": {
+            "type": "string",
+            "title": "Speech"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "upload_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Url"
+          },
+          "notification_status": {
+            "type": "string",
+            "const": "not_requested",
+            "title": "Notification Status",
+            "default": "not_requested"
+          },
+          "extraction_provider": {
+            "type": "string",
+            "enum": [
+              "rules",
+              "openai",
+              "structured"
+            ],
+            "title": "Extraction Provider",
+            "default": "rules"
+          },
+          "ui_action": {
+            "type": "string",
+            "enum": [
+              "none",
+              "profiles_updated",
+              "caregiver_selected",
+              "open_report",
+              "open_care_log",
+              "new_observation",
+              "observation_reassigned",
+              "open_photo_link",
+              "refresh_record"
+            ],
+            "title": "Ui Action",
+            "default": "none"
+          },
+          "action_payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Action Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "event_id",
+          "status",
+          "event_type",
+          "details",
+          "unknown_fields",
+          "missing_fields",
+          "follow_up",
+          "red_flags",
+          "speech",
+          "occurred_at"
+        ],
+        "title": "ConversationResponse"
+      },
+      "EventPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EventView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "EventPage"
+      },
+      "EventTypeView": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "details_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details Schema"
+          },
+          "questions": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_type",
+          "details_schema",
+          "questions"
+        ],
+        "title": "EventTypeView"
+      },
+      "EventView": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "cat_id": {
+            "type": "string",
+            "title": "Cat Id"
+          },
+          "cat_name": {
+            "type": "string",
+            "title": "Cat Name"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_answer",
+              "completed",
+              "legacy"
+            ],
+            "title": "Status"
+          },
+          "unknown_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknown Fields"
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoView"
+            },
+            "type": "array",
+            "title": "Photos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "cat_id",
+          "cat_name",
+          "event_type",
+          "occurred_at",
+          "details",
+          "source",
+          "status",
+          "unknown_fields",
+          "photos"
+        ],
+        "title": "EventView"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LogEventRequest": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "default": "vomit"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "api"
+          }
+        },
+        "type": "object",
+        "title": "LogEventRequest"
+      },
+      "MessagePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MessageView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "MessagePage"
+      },
+      "MessageView": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "submitted_details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Submitted Details"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "response": {
+            "$ref": "#/components/schemas/ConversationResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "text",
+          "submitted_details",
+          "recorded_at",
+          "response"
+        ],
+        "title": "MessageView"
+      },
+      "PhotoView": {
+        "properties": {
+          "photo_id": {
+            "type": "string",
+            "title": "Photo Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "photo_id",
+          "url",
+          "uploaded_at"
+        ],
+        "title": "PhotoView"
+      },
+      "ReportItem": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Time"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "photos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Photos"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "unknown_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknown Fields"
+          },
+          "reporter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "time",
+          "type",
+          "details",
+          "photos",
+          "status",
+          "unknown_fields"
+        ],
+        "title": "ReportItem"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VetSummary": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "cat": {
+            "type": "string",
+            "title": "Cat"
+          },
+          "cat_id": {
+            "type": "string",
+            "title": "Cat Id"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/ReportItem"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "safety_note": {
+            "type": "string",
+            "title": "Safety Note"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "cat",
+          "cat_id",
+          "counts",
+          "timeline",
+          "safety_note",
+          "start",
+          "end"
+        ],
+        "title": "VetSummary"
+      }
+    }
+  }
+}

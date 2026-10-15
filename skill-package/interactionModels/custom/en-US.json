@@ -1,0 +1,68 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "cat nanny",
+      "intents": [
+        {
+          "name": "LogHealthEventIntent",
+          "slots": [
+            {
+              "name": "eventType",
+              "type": "EventType"
+            },
+            {
+              "name": "content",
+              "type": "VomitContent"
+            }
+          ],
+          "samples": [
+            "log that Mochi threw up",
+            "Mochi threw up {content}",
+            "record {eventType} for Mochi",
+            "Mochi has not eaten today"
+          ]
+        },
+        {
+          "name": "GetVetSummaryIntent",
+          "samples": [
+            "get Mochi's vet summary",
+            "show Mochi's vet summary",
+            "send Mochi's report"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "name": "EventType",
+          "values": [
+            { "name": { "value": "vomit" } },
+            { "name": { "value": "appetite" } },
+            { "name": { "value": "litter" } },
+            { "name": { "value": "energy" } }
+          ]
+        },
+        {
+          "name": "VomitContent",
+          "values": [
+            { "name": { "value": "food" } },
+            { "name": { "value": "hairball" } },
+            { "name": { "value": "liquid" } },
+            { "name": { "value": "foam" } }
+          ]
+        }
+      ]
+    }
+  }
+}

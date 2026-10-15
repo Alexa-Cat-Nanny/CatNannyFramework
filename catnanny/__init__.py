@@ -1,0 +1,1 @@
+"""Cat Nanny application package."""
