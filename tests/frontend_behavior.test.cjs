@@ -24,11 +24,11 @@ class Element {
   querySelectorAll(selector){const out=[];for(const child of this.children){if(selector.startsWith('.')?(child.className||'').split(' ').includes(selector.slice(1)):child.tagName===selector.toUpperCase())out.push(child);out.push(...child.querySelectorAll(selector));}return out;}
 }
 
-async function harness(turns=[]) {
+async function harness(turns=[], speechRecognition=null, speechSynthesis=null, timers={setTimeout,clearTimeout}) {
   const source=fs.readFileSync('catnanny/web/static/chat.js','utf8');
   const html=fs.readFileSync('catnanny/web/static/simulator.html','utf8');
   const elements={};for(const match of html.matchAll(/<([a-z]+)[^>]*\bid="([^"]+)"/g))elements[match[2]]=new Element(match[1]);
-  elements['messages'].append(elements.welcome);elements['report-days'].value='7';
+  elements['messages'].append(elements.welcome);elements['report-days'].value='7';elements['voice-language'].value='en-US';
   const records=new Map(),calls=[],downloads=[];
   class TestURL extends URL{static createObjectURL(blob){downloads.push(blob);return 'blob:test';}static revokeObjectURL(){}}
   function exportDocument(){const documentElement=new Element('html'),head=new Element('head'),body=new Element('body');documentElement.append(head,body);return {documentElement,head,body,createElement:tag=>new Element(tag),querySelectorAll:s=>documentElement.querySelectorAll(s)};}
@@ -36,8 +36,8 @@ async function harness(turns=[]) {
   const record={event_id:'evt_j',cat_id:'jeremy',cat_name:'Jeremy',event_type:'appetite',occurred_at:'2026-10-14T12:00:00Z',details:{status:'not_eating'},reporter:'Alex',status:'awaiting_answer',photos:[]};
   const report={cat:'Mochi',cat_id:'mochi',start:'2026-10-07T12:00:00Z',end:'2026-10-14T12:00:00Z',counts:{total_events:1},timeline:[{time:'2026-10-14T12:00:00Z',type:'vomit',reporter:'Alex',status:'completed',details:{content:'food'},photos:['http://localhost:8000/uploads/test.png']}]};
   const context={document:{getElementById:id=>elements[id],createElement:tag=>new Element(tag),querySelectorAll:()=>[],addEventListener(){},implementation:{createHTMLDocument:exportDocument}},
-    window:{addEventListener(){}},location:{origin:'http://localhost:8000'},localStorage:{getItem:key=>records.get(key)||null,setItem:(key,value)=>records.set(key,value),removeItem:key=>records.delete(key)},
-    crypto:{randomUUID},URL:TestURL,URLSearchParams,Date,Blob,setTimeout,confirm:()=>true,alert(){},FileReader:class{readAsDataURL(blob){blob.arrayBuffer().then(buffer=>{this.result=`data:${blob.type};base64,${Buffer.from(buffer).toString('base64')}`;this.onload();});}},
+    window:{addEventListener(){},SpeechRecognition:speechRecognition,speechSynthesis,SpeechSynthesisUtterance:speechSynthesis?class{constructor(text){this.text=text;}}:null},location:{origin:'http://localhost:8000'},localStorage:{getItem:key=>records.get(key)||null,setItem:(key,value)=>records.set(key,value),removeItem:key=>records.delete(key)},
+    crypto:{randomUUID},URL:TestURL,URLSearchParams,Date,Blob,setTimeout:timers.setTimeout,clearTimeout:timers.clearTimeout,confirm:()=>true,alert(){},FileReader:class{readAsDataURL(blob){blob.arrayBuffer().then(buffer=>{this.result=`data:${blob.type};base64,${Buffer.from(buffer).toString('base64')}`;this.onload();});}},
     fetch:async(path,options={})=>{calls.push({path,body:options.body?JSON.parse(options.body):null});let data;
       if(path==='/cats')data=cats;
       else if(path==='/caregivers')data=[{caregiver_id:'demo_caregiver',name:'Alex'}];
@@ -121,4 +121,113 @@ test('subject correction updates the profile and photo card without leaving the 
   assert.match(h.elements['chat-title'].textContent,/Jeremy/);
   assert.equal(h.elements.messages.querySelectorAll('.delivery-card')[0].querySelectorAll('strong')[0].textContent,'Add a photo for Jeremy');
   assert.match(h.elements.messages.textContent,/Corrected/);
+});
+
+
+test('interim-only voice transcription preserves drafts without auto-send',async()=>{
+  let mic;
+  class Recognition {
+    constructor(){mic=this;}
+    start(){}
+    stop(){this.onend();}
+    abort(){this.onend();}
+  }
+  const h=await harness([],Recognition);
+  h.elements['message-input'].value='Mochi';
+  await h.elements['voice-toggle'].dispatch('click');
+  assert.equal(mic.lang,'en-US');
+  assert.equal(h.elements['message-input'].disabled,true);
+  mic.onresult({results:[[{transcript:'vomited'}]]});
+  mic.onresult({results:[[{transcript:'vomited twice'}]]});
+  assert.equal(h.elements['message-input'].value,'Mochi vomited twice');
+  await h.elements['chat-form'].dispatch('submit');
+  assert.equal(h.calls.some(c=>c.path==='/conversations/turns'),false);
+  mic.onend();
+  assert.equal(h.elements['message-input'].disabled,false);
+  assert.equal(h.elements['voice-toggle'].attrs['aria-pressed'],'false');
+  assert.equal(h.calls.some(c=>c.path==='/conversations/turns'),false);
+});
+
+test('microphone failure keeps typed text and provides a retry explanation',async()=>{
+  let mic;
+  class Recognition {constructor(){mic=this;}start(){}stop(){this.onend();}}
+  const h=await harness([],Recognition);
+  h.elements['message-input'].value='Existing draft';
+  await h.elements['voice-toggle'].dispatch('click');
+  mic.onerror({error:'not-allowed'});mic.onend();
+  assert.equal(h.elements['message-input'].value,'Existing draft');
+  assert.match(h.elements['voice-hint'].textContent,/permission was denied/);
+  assert.equal(h.elements['message-input'].disabled,false);
+});
+
+test('unsupported browsers retain typed input with an explicit voice fallback',async()=>{
+  const h=await harness();
+  assert.equal(h.elements['voice-toggle'].disabled,true);
+  assert.match(h.elements['voice-hint'].textContent,/unavailable/);
+  assert.equal(h.elements['message-input'].disabled,false);
+});
+
+
+test('new replies speak visible text; replay and mute cancel playback',async()=>{
+  const spoken=[];let canceled=0;
+  const synth={getVoices:()=>[],cancel(){canceled++;},speak(u){spoken.push(u);u.onstart();}};
+  const h=await harness([{session_id:'audio',speech:'Which cat are you recording this for?'}],null,synth);
+  assert.equal(spoken.length,0);
+  h.elements['message-input'].value='My cat vomited';
+  await h.elements['chat-form'].dispatch('submit');
+  assert.equal(spoken.length,1);
+  assert.equal(spoken[0].text,h.elements['device-subtitle'].textContent);
+  assert.equal(spoken[0].lang,'en-US');
+  assert.equal(h.elements['alexa-device'].attrs['data-state'],'speaking');
+  spoken[0].onend();
+  assert.equal(h.elements['alexa-device'].attrs['data-state'],'ready');
+  await h.elements['audio-replay'].dispatch('click');
+  assert.equal(spoken.length,2);
+  const before=canceled;
+  await h.elements['audio-toggle'].dispatch('click');
+  assert.equal(canceled,before+1);
+  assert.equal(h.records.get('catnanny.audio'),'off');
+  spoken[1].onstart();
+  assert.equal(h.elements['alexa-device'].attrs['data-state'],'ready');
+});
+
+test('microphone interrupts speech playback and disables replay while listening',async()=>{
+  let mic,canceled=0;
+  class Recognition{constructor(){mic=this;}start(){}stop(){this.onend();}}
+  const synth={getVoices:()=>[],cancel(){canceled++;},speak(u){u.onstart();}};
+  const h=await harness([{session_id:'audio',speech:'Which cat?'}],Recognition,synth);
+  h.elements['message-input'].value='My cat vomited';await h.elements['chat-form'].dispatch('submit');
+  const before=canceled;
+  await h.elements['voice-toggle'].dispatch('click');
+  assert.equal(canceled,before+1);
+  assert.equal(h.elements['audio-replay'].disabled,true);
+  assert.equal(h.elements['alexa-device'].attrs['data-state'],'listening');
+  mic.onend();
+  assert.equal(h.elements['audio-replay'].disabled,false);
+});
+
+
+test('final voice text sends after five seconds; editing or canceling stops the countdown',async()=>{
+  let mic;const pending=new Map();let sequence=0;
+  const timers={setTimeout(fn){const id=++sequence;pending.set(id,fn);return id;},clearTimeout(id){pending.delete(id);}};
+  async function second(){for(const [id,fn]of [...pending]){pending.delete(id);fn();}await new Promise(resolve=>setImmediate(resolve));}
+  class Recognition{constructor(){mic=this;}start(){}stop(){this.onend();}}
+  const h=await harness([{session_id:'auto',speech:'Which cat?'}],Recognition,null,timers);
+  h.elements['chat-form'].requestSubmit=()=>h.elements['chat-form'].dispatch('submit');
+  async function dictate(){await h.elements['voice-toggle'].dispatch('click');const result=[{transcript:'My cat vomited'}];result.isFinal=true;mic.onresult({results:[result]});mic.onend();}
+  await dictate();
+  assert.match(h.elements['voice-hint'].textContent,/Sending in 5/);
+  for(let i=0;i<4;i++)await second();
+  assert.equal(h.calls.some(c=>c.path==='/conversations/turns'),false);
+  await second();
+  assert.equal(h.calls.filter(c=>c.path==='/conversations/turns').length,1);
+  await dictate();
+  await h.elements['voice-cancel'].dispatch('click');
+  for(let i=0;i<5;i++)await second();
+  assert.equal(h.calls.filter(c=>c.path==='/conversations/turns').length,1);
+  await dictate();h.elements['message-input'].value='Corrected draft';
+  await h.elements['message-input'].dispatch('input');
+  for(let i=0;i<5;i++)await second();
+  assert.equal(h.calls.filter(c=>c.path==='/conversations/turns').length,1);
+  assert.equal(h.elements['message-input'].value,'Corrected draft');
 });
