@@ -19,7 +19,7 @@
     e.preventDefault(); const file=$('photo-input').files[0]; if(!validEvent||!file)return;
     $('upload-submit').disabled=true; $('photo-input').disabled=true; $('upload-submit').textContent='Uploading…';
     const form=new FormData(); form.append('event_id',eventId); form.append('photo',file);
-    try { const response=await fetch('/photos/upload',{method:'POST',body:form}); const data=await response.json(); if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:'Upload did not complete. Please retry.'); feedback('Photo uploaded and attached to this observation. Return to the conversation to view it.'); if(window.opener) window.opener.postMessage({type:'catnanny:photo-uploaded',eventId},location.origin); $('upload-submit').textContent='Uploaded'; $('photo-input').value=''; }
+    try { const response=await fetch('/photos/upload',{method:'POST',body:form}); const data=await response.json(); if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:'Upload did not complete. Please retry.'); feedback('Photo uploaded and attached to this observation. Return to the conversation to view it.'); try { localStorage.setItem('catnanny.photo-uploaded',JSON.stringify({eventId,photoId:data.photo?.photo_id,at:Date.now()})); } catch {} try { if(window.opener) window.opener.postMessage({type:'catnanny:photo-uploaded',eventId},location.origin); } catch {} $('upload-submit').textContent='Uploaded'; $('photo-input').value=''; }
     catch(error) { feedback(error.message||'Upload did not complete. Please try again.',true); $('upload-submit').disabled=false; $('upload-submit').textContent='Retry upload'; }
     finally { $('photo-input').disabled=false; }
   });
