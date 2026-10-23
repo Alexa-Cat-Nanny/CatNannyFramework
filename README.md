@@ -1,3 +1,5 @@
+October 23, 2026
+
 # Cat Nanny — Start Here / 从这里开始
 
 A working, local Alexa+ experience simulation for shared cat care.
@@ -45,15 +47,17 @@ macOS/Linux commands and optional OpenAI setup are in the team handoff.
 - SQLite persistence; offline rules or backend-only OpenAI Responses extraction.
 - Recent verification: 88 Python tests and 5 JavaScript behavior tests passed. Browser layout/click checks remain manual.
 
-Not implemented / 尚未完成: live Alexa integration, a compliant hosted MCP server, AWS deployment, real SMS/email, document uploads, user authentication and multi-household access control. Existing Alexa/MCP files are adapters/drafts, not deployment evidence.
+## Team ownership / 团队分工 [updated Oct 23, 2026]
 
-## Team ownership / 团队分工
+Frontend @ShuWangs: Develop the user interface and mobile layouts for cat profiles, conversations, photo uploads, and seven-day care reports. Improve loading states, error messages, and user interactions.
+前端：负责用户界面与移动端适配，实现猫咪档案、对话记录、照片上传及七天护理报告展示，完善加载状态、错误提示和页面交互。
 
-Frontend: polish the existing pages or build another client against the conversation API; preserve subject clarification, correction, restore and explicit report behavior.
-前端：页面、手机适配、加载与错误反馈、实际点按验收；不要在浏览器中持有 OpenAI 密钥。
+Backend @yifengp: Develop APIs, conversation workflows, and data management for symptom tracking, follow-up questions, corrections, photo linking, and report generation. Handle server-side AI integration and API testing.
+后端：负责 API、对话流程与数据管理，实现症状记录、多轮追问、信息纠正、照片关联及报告生成，并完成服务端 AI 调用与接口测试。
 
-Backend/AWS: keep the API contract stable; deploy HTTPS, manage server-side secrets, persist and back up both database and photos.
-后端/AWS：先考虑单实例持久存储；换云数据库或 S3 是额外的代码适配工作。
+AWS & MCP @Y1t1anL1u : Manage AWS deployment, HTTPS, server-side secrets, and persistent storage and backups for records and photos. Develop and test MCP services and connection adapters to support Alexa tool integration.
+AWS 与 MCP：负责 AWS 云端部署、HTTPS 配置、密钥管理及数据库与照片的持久化备份；开发并测试 MCP 服务与连接适配，推进 Alexa 的工具调用集成。
+
 
 ## Hackathon positioning / 比赛定位
 
@@ -61,10 +65,6 @@ The official Alexa+ track permits a simulated experience as an alternate entry p
 AWS is optional for this path; claiming an AWS mini-challenge requires documented actual use.
 [Official rules / 官方规则](https://amazonappdev2026.devpost.com/rules).
 
-## Repository hygiene / 仓库说明
-
-`.env`, `.venv/`, `data/` and `uploads/` are ignored and not delivered by cloning. Each teammate creates local configuration and local data.
-密钥、实际记录和照片不随 clone 分发。当前没有容器/基础设施部署模板，依赖尚未锁定版本。
 
 
 
